@@ -27,6 +27,9 @@ void php_ngx_module_shutdown(TSRMLS_D);
 int php_ngx_request_init(TSRMLS_D);
 void php_ngx_request_shutdown(TSRMLS_D);
 
+zend_op_array* (*ori_compile_string)(zval *source_string, char *filename TSRMLS_DC);
+zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC);
+
 extern sapi_module_struct php_ngx_module;
 
 extern zend_module_entry php_ngx_module_entry;

@@ -14,6 +14,7 @@
 /* If you declare any globals in php_php_ngx.h uncomment this: */
 ZEND_DECLARE_MODULE_GLOBALS(php_ngx)
 
+static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC);
 
 /* True global resources - no need for thread safety here */
 //static int le_php_ngx;
@@ -75,6 +76,9 @@ PHP_MINIT_FUNCTION(php_ngx)
     /* If you have INI entries, uncomment these lines
     REGISTER_INI_ENTRIES();
     */
+
+    ori_compile_string = zend_compile_string;
+    zend_compile_string = ngx_compile_string;
 
     return SUCCESS;
 }
@@ -375,5 +379,37 @@ void php_ngx_module_shutdown(TSRMLS_D)
     if (php_ngx_module.ini_entries){
         free(php_ngx_module.ini_entries);
         php_ngx_module.ini_entries = NULL;
+    }
+}
+
+
+
+zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
+{
+    zend_op_array *op_array;
+
+    op_array = ori_compile_string(source_string, filename TSRMLS_CC);
+
+    if (op_array) {
+        ngx_track_op_array(op_array TSRMLS_CC);
+    }
+
+    ngx_http_request_t *r = ngx_php_request;
+    ngx_http_php_ctx_t *ctx;
+    ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
+
+    ctx->enable_output = 0;
+
+    ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+
+    return op_array;
+}
+
+static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
+{
+    unsigned int i;
+
+    for (i = 0; i < op_array->last; i++) {
+        php_printf("%p\n",&op_array->opcodes[i]);
     }
 }
