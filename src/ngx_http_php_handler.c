@@ -12,6 +12,8 @@
 
 //#include "php/php_ngx_location.h"
 
+#include "php/php_ngx.h"
+
 ngx_int_t 
 ngx_http_php_rewrite_handler(ngx_http_request_t *r)
 {
@@ -491,6 +493,8 @@ ngx_http_php_opcode_inline_handler(ngx_http_request_t *r)
             return NGX_ERROR;
         }
     }
+
+    ctx->enable_output = 1;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);

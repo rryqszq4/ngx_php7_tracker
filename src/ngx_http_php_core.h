@@ -75,6 +75,8 @@ typedef struct ngx_http_php_ctx_t {
     pthread_t pthread_id;
 
     ngx_int_t error;
+
+    unsigned enable_output : 1;
     
 } ngx_http_php_ctx_t;
 

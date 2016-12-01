@@ -359,6 +359,8 @@ ngx_http_php_create_loc_conf(ngx_conf_t *cf)
 
     plcf->content_async_inline_code = NGX_CONF_UNSET_PTR;
 
+    plcf->opcode_inline_code = NGX_CONF_UNSET_PTR;
+
     return plcf;
 }
 
@@ -384,6 +386,8 @@ ngx_http_php_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     prev->content_inline_code = conf->content_inline_code;
 
     prev->content_async_inline_code = conf->content_async_inline_code;
+
+    prev->opcode_inline_code = conf->opcode_inline_code;
 
     return NGX_CONF_OK;
 }
