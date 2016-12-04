@@ -408,8 +408,15 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
 {
     unsigned int i;
+    zend_op op;
 
     for (i = 0; i < op_array->last; i++) {
-        php_printf("%p\n",&op_array->opcodes[i]);
+        op = op_array->opcodes[i];
+        php_printf("%-4d%-6d%-30s%-12d%-12d\n", 
+            i, 
+            op.lineno, 
+            zend_get_opcode_name(op.opcode),
+            op.op1_type,
+            op.op2_type);
     }
 }
