@@ -77,9 +77,6 @@ PHP_MINIT_FUNCTION(php_ngx)
     REGISTER_INI_ENTRIES();
     */
 
-    ori_compile_string = zend_compile_string;
-    zend_compile_string = ngx_compile_string;
-
     return SUCCESS;
 }
 /* }}} */
