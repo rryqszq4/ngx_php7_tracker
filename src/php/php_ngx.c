@@ -16,7 +16,12 @@
 ZEND_DECLARE_MODULE_GLOBALS(php_ngx)
 
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC);
+static int ngx_track_fe_wrapper(zval *el TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
+static int ngx_track_cle_wrapper (zval *el TSRMLS_DC);
+//static int ngx_check_fe_wrapper (zval *el, zend_bool *have_fe TSRMLS_DC);
 static int ngx_track_fe(zend_op_array *fe TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
+static int ngx_track_cle(zend_class_entry *class_entry TSRMLS_DC);
+//static int ngx_check_fe(zend_op_array *fe, zend_bool *have_fe TSRMLS_DC);
 
 /* True global resources - no need for thread safety here */
 //static int le_php_ngx;
@@ -391,8 +396,10 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
 
     if (op_array) {
         ngx_track_op_array(op_array TSRMLS_CC);
-        
-        zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe, 0);
+
+        zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);
+    
+        zend_hash_apply(CG(class_table), (apply_func_t) ngx_track_cle_wrapper TSRMLS_CC);
     }
 
     ngx_http_request_t *r = ngx_php_request;
@@ -422,6 +429,21 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
     }
 }
 
+static int ngx_track_fe_wrapper(zval *el TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key)
+{
+    return ngx_track_fe((zend_op_array *) Z_PTR_P(el) TSRMLS_CC, num_args, args, hash_key);
+}
+
+static int ngx_track_cle_wrapper (zval *el TSRMLS_DC)
+{
+    return ngx_track_cle((zend_class_entry *) Z_PTR_P(el) TSRMLS_CC);
+}
+
+/*static int ngx_check_fe_wrapper (zval *el, zend_bool *have_fe TSRMLS_DC)
+{
+    return ngx_check_fe((zend_op_array *) Z_PTR_P(el), have_fe TSRMLS_CC);
+}*/
+
 static int ngx_track_fe(zend_op_array *fe TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key)
 {
     if (fe->type == ZEND_USER_FUNCTION) {
@@ -430,3 +452,35 @@ static int ngx_track_fe(zend_op_array *fe TSRMLS_DC, int num_args, va_list args,
 
     return ZEND_HASH_APPLY_KEEP;
 }
+
+static int ngx_track_cle(zend_class_entry *class_entry TSRMLS_DC)
+{
+    zend_class_entry *ce;
+    //zend_bool have_fe = 0;
+
+    ce = class_entry;
+
+    if (ce->type != ZEND_INTERNAL_CLASS) {
+        //zend_hash_apply_with_arguments(&ce->function_table, (apply_func_args_t) ngx_check_fe_wrapper, (int )&have_fe TSRMLS_CC);
+
+        //if (have_fe) {
+            zend_hash_apply_with_arguments(&ce->function_table TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);
+        //}
+    }
+
+    return ZEND_HASH_APPLY_KEEP; 
+}
+
+/*static int ngx_check_fe(zend_op_array *fe, zend_bool *have_fe TSRMLS_DC)
+{
+    if (fe->type == ZEND_USER_FUNCTION) {
+        *have_fe = 1;
+    }
+
+    return 0;
+}*/
+
+
+
+
+
