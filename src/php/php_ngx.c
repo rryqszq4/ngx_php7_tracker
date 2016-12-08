@@ -103,6 +103,9 @@ PHP_RINIT_FUNCTION(php_ngx)
 
     //PHP_NGX_G(global_r) = NULL;
 
+    ori_compile_string = zend_compile_string;
+    zend_compile_string = ngx_compile_string;
+
     return SUCCESS;
 }
 /* }}} */
