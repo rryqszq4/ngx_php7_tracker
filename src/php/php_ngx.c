@@ -7,6 +7,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "php_globals.h"
 #include "php_ngx.h"
 
 #include "../ngx_http_php_module.h"
@@ -15,6 +16,7 @@
 ZEND_DECLARE_MODULE_GLOBALS(php_ngx)
 
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC);
+static int ngx_track_fe(zend_op_array *fe TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
 
 /* True global resources - no need for thread safety here */
 //static int le_php_ngx;
@@ -102,9 +104,6 @@ PHP_RINIT_FUNCTION(php_ngx)
 #endif
 
     //PHP_NGX_G(global_r) = NULL;
-
-    ori_compile_string = zend_compile_string;
-    zend_compile_string = ngx_compile_string;
 
     return SUCCESS;
 }
@@ -392,6 +391,8 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
 
     if (op_array) {
         ngx_track_op_array(op_array TSRMLS_CC);
+        
+        zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe, 0);
     }
 
     ngx_http_request_t *r = ngx_php_request;
@@ -419,4 +420,13 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
             op.op1_type,
             op.op2_type);
     }
+}
+
+static int ngx_track_fe(zend_op_array *fe TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key)
+{
+    if (fe->type == ZEND_USER_FUNCTION) {
+        ngx_track_op_array(fe TSRMLS_CC);
+    }
+
+    return ZEND_HASH_APPLY_KEEP;
 }
