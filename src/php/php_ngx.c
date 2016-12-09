@@ -418,6 +418,14 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
     unsigned int i;
     zend_op op;
 
+    php_printf("filename: %s\n", op_array->filename?ZSTR_VAL(op_array->filename):NULL);
+
+    if (op_array->scope) {
+        php_printf("function_name: %s::%s\n", ZSTR_VAL(op_array->scope->name), op_array->function_name?ZSTR_VAL(op_array->function_name):NULL);
+    }else {
+        php_printf("function_name: %s\n", op_array->function_name?ZSTR_VAL(op_array->function_name):NULL);
+    }
+
     for (i = 0; i < op_array->last; i++) {
         op = op_array->opcodes[i];
         php_printf("%-4d%-6d%-30s%-12d%-12d\n", 
@@ -427,6 +435,8 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
             op.op1_type,
             op.op2_type);
     }
+
+    php_printf("\n");
 }
 
 static int ngx_track_fe_wrapper(zval *el TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key)
