@@ -15,7 +15,7 @@
 /* If you declare any globals in php_php_ngx.h uncomment this: */
 ZEND_DECLARE_MODULE_GLOBALS(php_ngx)
 
-static int ngx_track_zval(zval *zv);
+static int ngx_track_zval(zval zv);
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC);
 static int ngx_track_fe_wrapper(zval *el TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
 static int ngx_track_cle_wrapper (zval *el TSRMLS_DC);
@@ -414,25 +414,57 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
     return op_array;
 }
 
-static int ngx_track_zval(zval *zv)
+static int ngx_track_zval(zval zv)
 {
-    switch (zv->u1.v.type) {
-        case IS_UNDEF: return IS_UNDEF;
-        case IS_NULL : return IS_NULL;
-        case IS_FALSE : return IS_FALSE;
-        case IS_TRUE : return IS_TRUE;
-        case IS_LONG : return IS_LONG;
-        case IS_DOUBLE : return IS_DOUBLE;
-        case IS_STRING: return IS_STRING;
-        case IS_ARRAY: return IS_ARRAY;
-        case IS_OBJECT: return IS_OBJECT;
-        case IS_RESOURCE: return IS_RESOURCE;
-        case IS_REFERENCE: return IS_REFERENCE;
-        case IS_CONSTANT: return IS_CONSTANT;
-        case IS_CALLABLE: return IS_CALLABLE;
-        case IS_INDIRECT: return IS_INDIRECT;
-        case IS_PTR: return IS_PTR;
-        default: return -1;
+    switch (zv.u1.v.type) {
+        case IS_UNDEF: 
+            php_printf("%-16s","<undef>");
+            return IS_UNDEF;
+        case IS_NULL : 
+            php_printf("%-16s","<null>");
+            return IS_NULL;
+        case IS_FALSE : 
+            php_printf("%-16s","<false>");
+            return IS_FALSE;
+        case IS_TRUE : 
+            php_printf("%-16s","<true>");
+            return IS_TRUE;
+        case IS_LONG : 
+            php_printf("%-16ld", zv.value.lval);
+            return IS_LONG;
+        case IS_DOUBLE : 
+            php_printf("%-16g", zv.value.dval);
+            return IS_DOUBLE;
+        case IS_STRING: 
+            php_printf("%-16s", ZSTR_VAL(zv.value.str));
+            return IS_STRING;
+        case IS_ARRAY: 
+            php_printf("%-16s","<array>");
+            return IS_ARRAY;
+        case IS_OBJECT: 
+            php_printf("%-16s","<object>");
+            return IS_OBJECT;
+        case IS_RESOURCE: 
+            php_printf("%-16s","<resource>");
+            return IS_RESOURCE;
+        case IS_REFERENCE: 
+            php_printf("%-16s","<reference>");
+            return IS_REFERENCE;
+        case IS_CONSTANT: 
+            php_printf("%-16s","<constant>");
+            return IS_CONSTANT;
+        case IS_CALLABLE: 
+            php_printf("%-16s","<callable>");
+            return IS_CALLABLE;
+        case IS_INDIRECT: 
+            php_printf("%-16s","<indirect>");
+            return IS_INDIRECT;
+        case IS_PTR: 
+            php_printf("%-16s","<prt>");
+            return IS_PTR;
+        default: 
+            php_printf("%-16s","<unknown>");
+            return -1;
     }
 }
 
@@ -451,16 +483,19 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
 
     for (i = 1; i < op_array->last; i++) {
         op = op_array->opcodes[i];
-        php_printf("%-4d%-6d%-30s%-12d%-12d%-12d%d\n", 
+        php_printf("%-6d%-6d%-38s%-12d%-12d%-12d", 
             i, 
             op.lineno, 
             zend_get_opcode_name(op.opcode),
             op.op1_type,
             op.op2_type,
-            op.result_type,
+            op.result_type
             //op.op1
-            ngx_track_zval(RT_CONSTANT_EX(op_array->literals, op.op1))
             );
+        ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, op.op1));
+        ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, op.op2));
+        ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, op.result));
+        php_printf("\n");
     }
 
     php_printf("\n");
