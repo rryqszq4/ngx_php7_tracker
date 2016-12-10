@@ -15,6 +15,7 @@
 /* If you declare any globals in php_php_ngx.h uncomment this: */
 ZEND_DECLARE_MODULE_GLOBALS(php_ngx)
 
+static int ngx_track_zval(zval *zv);
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC);
 static int ngx_track_fe_wrapper(zval *el TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
 static int ngx_track_cle_wrapper (zval *el TSRMLS_DC);
@@ -413,6 +414,28 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
     return op_array;
 }
 
+static int ngx_track_zval(zval *zv)
+{
+    switch (zv->u1.v.type) {
+        case IS_UNDEF: return IS_UNDEF;
+        case IS_NULL : return IS_NULL;
+        case IS_FALSE : return IS_FALSE;
+        case IS_TRUE : return IS_TRUE;
+        case IS_LONG : return IS_LONG;
+        case IS_DOUBLE : return IS_DOUBLE;
+        case IS_STRING: return IS_STRING;
+        case IS_ARRAY: return IS_ARRAY;
+        case IS_OBJECT: return IS_OBJECT;
+        case IS_RESOURCE: return IS_RESOURCE;
+        case IS_REFERENCE: return IS_REFERENCE;
+        case IS_CONSTANT: return IS_CONSTANT;
+        case IS_CALLABLE: return IS_CALLABLE;
+        case IS_INDIRECT: return IS_INDIRECT;
+        case IS_PTR: return IS_PTR;
+        default: return -1;
+    }
+}
+
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
 {
     unsigned int i;
@@ -426,14 +449,18 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
         php_printf("function_name: %s\n", op_array->function_name?ZSTR_VAL(op_array->function_name):NULL);
     }
 
-    for (i = 0; i < op_array->last; i++) {
+    for (i = 1; i < op_array->last; i++) {
         op = op_array->opcodes[i];
-        php_printf("%-4d%-6d%-30s%-12d%-12d\n", 
+        php_printf("%-4d%-6d%-30s%-12d%-12d%-12d%d\n", 
             i, 
             op.lineno, 
             zend_get_opcode_name(op.opcode),
             op.op1_type,
-            op.op2_type);
+            op.op2_type,
+            op.result_type,
+            //op.op1
+            ngx_track_zval(RT_CONSTANT_EX(op_array->literals, op.op1))
+            );
     }
 
     php_printf("\n");

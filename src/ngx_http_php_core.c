@@ -564,7 +564,7 @@ ngx_php_ngx_run(ngx_http_request_t *r, ngx_http_php_state_t *state, ngx_http_php
 
     if (code->code_type == NGX_HTTP_PHP_CODE_TYPE_STRING){
 
-        zend_eval_string_ex(code->code.string, NULL, "ngx_php run code", 1 TSRMLS_CC);
+        zend_eval_string_ex(code->code.string, NULL, "ngx_php7 run code", 1 TSRMLS_CC);
 
     }else if (code->code_type == NGX_HTTP_PHP_CODE_TYPE_FILE){
 
