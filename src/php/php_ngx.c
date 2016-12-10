@@ -396,6 +396,12 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
     op_array = ori_compile_string(source_string, filename TSRMLS_CC);
 
     if (op_array) {
+php_printf("    ___                   __    \n");
+php_printf("  /`__ \\___  ___  ___  __/ /__  \n");
+php_printf(" / /_/ / _ \\/ _ `/ _ \\/ _ / __\\ \n");
+php_printf(" \\___./ .__/\\___.\\___/\\___\\__..   /ngx_php7_tracker\n"); 
+php_printf("     /_/                         /version: %s\n", MODULE_VERSION);
+php_printf("\n");
         ngx_track_op_array(op_array TSRMLS_CC);
 
         zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);
@@ -473,7 +479,7 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
     unsigned int i;
     zend_op op;
 
-    php_printf("filename: %s\n", op_array->filename?ZSTR_VAL(op_array->filename):NULL);
+    php_printf("filename: '%s'\n", op_array->filename?ZSTR_VAL(op_array->filename):NULL);
 
     if (op_array->scope) {
         php_printf("function_name: %s::%s\n", ZSTR_VAL(op_array->scope->name), op_array->function_name?ZSTR_VAL(op_array->function_name):NULL);
@@ -483,7 +489,7 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
 
     for (i = 1; i < op_array->last; i++) {
         op = op_array->opcodes[i];
-        php_printf("%-6d%-6d%-38s%-12d%-12d%-12d", 
+        php_printf("    %-6d%-6d%-38s%-12d%-12d%-12d", 
             i, 
             op.lineno, 
             zend_get_opcode_name(op.opcode),
