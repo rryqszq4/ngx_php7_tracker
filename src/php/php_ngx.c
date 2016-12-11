@@ -402,7 +402,7 @@ php_printf("  /`__ \\___  ___  ___  __/ /__  \n");
 php_printf(" / /_/ / _ \\/ _ `/ _ \\/ _ / __\\ \n");
 php_printf(" \\___./ .__/\\___.\\___/\\___\\__..   /ngx_php7_tracker\n"); 
 php_printf("     /_/                         /version: %s\n", MODULE_VERSION);
-php_printf("\n");
+php_printf("\n/* ~: IS_TMP_VAR, $: IS_VAR, !: IS_CV */\n\n");
         ngx_track_op_array(op_array TSRMLS_CC);
 
         zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);
@@ -512,16 +512,18 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
         php_printf("function_name: %s\n", op_array->function_name?ZSTR_VAL(op_array->function_name):NULL);
     }
 
+    php_printf("    %-6s%-6s%-38s%-16s%-16s%-16s\n","id","line","opcode","op1","op2","result");
+    php_printf("    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
     for (i = 1; i < op_array->last; i++) {
         op = op_array->opcodes[i];
-        php_printf("    %-6d%-6d%-38s%-12d%-12d%-12d", 
+        php_printf("    %-6d%-6d%-38s", 
             i, 
             op.lineno, 
-            zend_get_opcode_name(op.opcode),
-            op.op1_type,
-            op.op2_type,
-            op.result_type
-            //op.op1
+            zend_get_opcode_name(op.opcode)
+            //op.op1_type,
+            //op.op2_type,
+            //op.result_type
             );
         ngx_track_znode(op.op1_type, op.op1, op_array TSRMLS_CC);
         ngx_track_znode(op.op2_type, op.op2, op_array TSRMLS_CC);
