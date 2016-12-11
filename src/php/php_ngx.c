@@ -396,7 +396,14 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
 
     op_array = ori_compile_string(source_string, filename TSRMLS_CC);
 
-    if (op_array) {
+    ngx_http_request_t *r = ngx_php_request;
+    ngx_http_php_ctx_t *ctx;
+    ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
+
+    if (op_array && ctx->enable_output == 0) {
+        ctx->enable_output = 1;
+
+        //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
 php_printf("    ___                   __    \n");
 php_printf("  /`__ \\___  ___  ___  __/ /__  \n");
 php_printf(" / /_/ / _ \\/ _ `/ _ \\/ _ / __\\ \n");
@@ -408,15 +415,15 @@ php_printf("\n/* ~: IS_TMP_VAR, $: IS_VAR, !: IS_CV */\n\n");
         zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);
     
         zend_hash_apply(CG(class_table), (apply_func_t) ngx_track_cle_wrapper TSRMLS_CC);
+        
+        ctx->enable_output = 0;
+
+        ngx_http_set_ctx(r, ctx, ngx_http_php_module);
     }
 
-    ngx_http_request_t *r = ngx_php_request;
-    ngx_http_php_ctx_t *ctx;
-    ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
+    //ctx->enable_output = 0;
 
-    ctx->enable_output = 0;
-
-    ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+    //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
 
     return op_array;
 }

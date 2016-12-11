@@ -496,7 +496,7 @@ ngx_http_php_opcode_inline_handler(ngx_http_request_t *r)
         }
     }
 
-    ctx->enable_output = 1;
+    ctx->enable_output = 0;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);
@@ -509,10 +509,7 @@ ngx_http_php_opcode_inline_handler(ngx_http_request_t *r)
 
     NGX_HTTP_PHP_NGX_INIT;
         // location opcode
-        ori_compile_string = zend_compile_string;
-        zend_compile_string = ngx_compile_string;
         ngx_php_ngx_run(r, pmcf->state, plcf->opcode_inline_code);
-        zend_compile_string = ori_compile_string;
     NGX_HTTP_PHP_NGX_SHUTDOWN;
 
     ngx_http_php_rputs_chain_list_t *chain;

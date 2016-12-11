@@ -420,6 +420,9 @@ ngx_http_php_init_worker(ngx_cycle_t *cycle)
     //old_zend_error_cb = zend_error_cb;
     //zend_error_cb = ngx_php_error_cb;
 
+    ori_compile_string = zend_compile_string;
+    zend_compile_string = ngx_compile_string;
+
     return NGX_OK;
 }
 
@@ -427,5 +430,8 @@ static void
 ngx_http_php_exit_worker(ngx_cycle_t *cycle)
 {
     TSRMLS_FETCH();
+
+    zend_compile_string = ori_compile_string;
+    
     php_ngx_module_shutdown(TSRMLS_C);
 }
