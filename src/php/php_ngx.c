@@ -16,6 +16,7 @@
 ZEND_DECLARE_MODULE_GLOBALS(php_ngx)
 
 static int ngx_track_zval(zval zv);
+static void ngx_track_znode(unsigned int node_type, znode_op node, zend_op_array *op_array TSRMLS_DC);
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC);
 static int ngx_track_fe_wrapper(zval *el TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
 static int ngx_track_cle_wrapper (zval *el TSRMLS_DC);
@@ -474,6 +475,30 @@ static int ngx_track_zval(zval zv)
     }
 }
 
+static void ngx_track_znode(unsigned int node_type, znode_op node, zend_op_array *op_array TSRMLS_DC)
+{
+    switch (node_type) {
+        case IS_UNDEF:
+            ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, node));
+            break;
+        case IS_CONST:
+            ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, node));
+            break;
+        case IS_TMP_VAR:
+            php_printf("~%-15d", EX_VAR_TO_NUM(node.var));
+            break;
+        case IS_VAR:
+            php_printf("$%-15d", EX_VAR_TO_NUM(node.var));
+            break;
+        case IS_CV:
+            php_printf("!%-15d", EX_VAR_TO_NUM(node.var));
+            break;
+        default:
+            php_printf("%-16s", " ");
+            break;
+    }
+}
+
 static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
 {
     unsigned int i;
@@ -498,9 +523,9 @@ static void ngx_track_op_array(zend_op_array *op_array TSRMLS_DC)
             op.result_type
             //op.op1
             );
-        ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, op.op1));
-        ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, op.op2));
-        ngx_track_zval(*RT_CONSTANT_EX(op_array->literals, op.result));
+        ngx_track_znode(op.op1_type, op.op1, op_array TSRMLS_CC);
+        ngx_track_znode(op.op2_type, op.op2, op_array TSRMLS_CC);
+        ngx_track_znode(op.result_type, op.result, op_array TSRMLS_CC);
         php_printf("\n");
     }
 
