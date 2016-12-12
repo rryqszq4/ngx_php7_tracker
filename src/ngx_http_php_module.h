@@ -32,6 +32,7 @@ typedef struct {
     unsigned enabled_content_async_handler:1;
 
     unsigned enabled_opcode_handler:1;
+    unsigned enabled_stack_handler:1;
 
     ngx_http_php_state_t *state;
 
@@ -49,6 +50,7 @@ typedef struct {
     ngx_http_php_code_t *content_async_inline_code;
 
     ngx_http_php_code_t *opcode_inline_code;
+    ngx_http_php_code_t *stack_inline_code;
 
     ngx_int_t (*rewrite_handler)(ngx_http_request_t *r);
     ngx_int_t (*access_handler)(ngx_http_request_t *r);
@@ -56,6 +58,7 @@ typedef struct {
     ngx_int_t (*content_async_handler)(ngx_http_request_t *r);
 
     ngx_int_t (*opcode_handler)(ngx_http_request_t *r);
+    ngx_int_t (*stack_handler)(ngx_http_request_t *r);
 } ngx_http_php_loc_conf_t;
 
 
