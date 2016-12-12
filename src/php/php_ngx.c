@@ -400,15 +400,15 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
     ngx_http_php_ctx_t *ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
 
-    if (op_array && ctx->enable_output == 0) {
-        ctx->enable_output = 1;
+    if (op_array && (ctx->output_type & OUTPUT_OPCODE)) {
+        ctx->output_type = OUTPUT_CONTENT;
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
 php_printf("    ___                   __    \n");
 php_printf("  /`__ \\___  ___  ___  __/ /__  \n");
 php_printf(" / /_/ / _ \\/ _ `/ _ \\/ _ / __\\ \n");
 php_printf(" \\___./ .__/\\___.\\___/\\___\\__..   /ngx_php7_tracker\n"); 
-php_printf("     /_/                         /version: %s\n", MODULE_VERSION);
+php_printf("     /_/                         /version: %s\n", NGX_HTTP_PHP_MODULE_VERSION);
 php_printf("\n/* ~: IS_TMP_VAR, $: IS_VAR, !: IS_CV */\n\n");
         ngx_track_op_array(op_array TSRMLS_CC);
 
@@ -416,7 +416,7 @@ php_printf("\n/* ~: IS_TMP_VAR, $: IS_VAR, !: IS_CV */\n\n");
     
         zend_hash_apply(CG(class_table), (apply_func_t) ngx_track_cle_wrapper TSRMLS_CC);
         
-        ctx->enable_output = 0;
+        ctx->output_type = OUTPUT_OPCODE;
 
         ngx_http_set_ctx(r, ctx, ngx_http_php_module);
     }
@@ -592,7 +592,61 @@ static int ngx_track_cle(zend_class_entry *class_entry TSRMLS_DC)
     return 0;
 }*/
 
+static inline zend_class_entry *ngx_get_called_scope(const zend_execute_data *e)
+{
+#if PHP_VERSION_ID < 70100
+    return e->called_scope;
+#else
+    return zend_get_called_scope((zend_execute_data *) e);
+#endif
+}
 
+static void ngx_function_name(zend_execute_data *execute_data)
+{
+    zend_execute_data *data;
+    zend_function *curr_func;
+    const char * cls;
+    const char * func;
 
+    data = EG(current_execute_data);
 
+    if (data) {
+        curr_func = data->func;
+        if (curr_func->common.function_name) {
+            func = curr_func->common.function_name->val;
+            cls = curr_func->common.scope ?
+                    curr_func->common.scope->name->val :
+                    (ngx_get_called_scope(data) ?
+                            ngx_get_called_scope(data)->name->val : NULL);
+            if (cls) {
+                php_printf("%s::%s\n", cls, func);
+            }else {
+                php_printf("%s\n", func);
+            }
+        }else {
+
+        }
+    }
+}
+
+void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
+{
+    ngx_http_request_t *r = ngx_php_request;
+    ngx_http_php_ctx_t *ctx;
+    ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
+
+    if (ctx->output_type & OUTPUT_STACK) {
+        ctx->output_type = OUTPUT_CONTENT;
+
+        //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+        
+        ngx_function_name(execute_data);
+
+        ctx->output_type = OUTPUT_STACK;
+
+        ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+    }
+
+    ori_execute_ex(execute_data TSRMLS_CC);
+}
 

@@ -443,6 +443,9 @@ ngx_http_php_init_worker(ngx_cycle_t *cycle)
     ori_compile_string = zend_compile_string;
     zend_compile_string = ngx_compile_string;
 
+    ori_execute_ex = zend_execute_ex;
+    zend_execute_ex = ngx_execute_ex;
+
     return NGX_OK;
 }
 
@@ -450,6 +453,8 @@ static void
 ngx_http_php_exit_worker(ngx_cycle_t *cycle)
 {
     TSRMLS_FETCH();
+
+    zend_execute_ex = ori_execute_ex;
 
     zend_compile_string = ori_compile_string;
     
