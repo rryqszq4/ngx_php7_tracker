@@ -249,7 +249,7 @@ size_t ngx_http_php_code_ub_write(const char *str, size_t str_length TSRMLS_DC)
     r = ngx_php_request;
     ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
 
-    if (ctx->enable_output){
+    if (ctx->output_type & OUTPUT_CONTENT){
 
         ns.data = (u_char *)str;
         ns.len = str_length;

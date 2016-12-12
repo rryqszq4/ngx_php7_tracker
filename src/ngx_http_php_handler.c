@@ -368,7 +368,7 @@ ngx_http_php_content_inline_handler(ngx_http_request_t *r)
         }
     }
 
-    ctx->enable_output = 1;
+    ctx->output_type = OUTPUT_CONTENT;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);
@@ -496,7 +496,7 @@ ngx_http_php_opcode_inline_handler(ngx_http_request_t *r)
         }
     }
 
-    ctx->enable_output = 0;
+    ctx->output_type = OUTPUT_OPCODE;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);
@@ -603,7 +603,7 @@ ngx_http_php_stack_inline_handler(ngx_http_request_t *r)
         }
     }
 
-    ctx->enable_output = 1;
+    ctx->output_type = OUTPUT_STACK;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);
