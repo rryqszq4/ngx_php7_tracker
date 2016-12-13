@@ -24,6 +24,9 @@ static int ngx_track_cle_wrapper (zval *el TSRMLS_DC);
 static int ngx_track_fe(zend_op_array *fe TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key);
 static int ngx_track_cle(zend_class_entry *class_entry TSRMLS_DC);
 //static int ngx_check_fe(zend_op_array *fe, zend_bool *have_fe TSRMLS_DC);
+static inline zend_class_entry *ngx_get_called_scope(const zend_execute_data *e);
+static inline const char *ngx_get_executed_filename(void);
+static void ngx_function_name(zend_execute_data *execute_data);
 
 /* True global resources - no need for thread safety here */
 //static int le_php_ngx;
