@@ -446,6 +446,8 @@ ngx_http_php_init_worker(ngx_cycle_t *cycle)
     ori_execute_ex = zend_execute_ex;
     zend_execute_ex = ngx_execute_ex;
 
+    zend_execute_internal = ngx_execute_internal;
+
     return NGX_OK;
 }
 

@@ -601,6 +601,20 @@ static inline zend_class_entry *ngx_get_called_scope(const zend_execute_data *e)
 #endif
 }
 
+static inline const char *ngx_get_executed_filename(void)
+{
+    zend_execute_data *ex = EG(current_execute_data);
+
+    while (ex && (!ex->func || !ZEND_USER_CODE(ex->func->type))) {
+        ex = ex->prev_execute_data;
+    }
+    if (ex) {
+        return ZSTR_VAL(ex->func->op_array.filename);
+    } else {
+        return zend_get_executed_filename();
+    }
+}
+
 static void ngx_function_name(zend_execute_data *execute_data)
 {
     zend_execute_data *data;
@@ -619,18 +633,21 @@ static void ngx_function_name(zend_execute_data *execute_data)
                     (ngx_get_called_scope(data) ?
                             ngx_get_called_scope(data)->name->val : NULL);
             if (cls) {
-                php_printf("%s::%s\n", cls, func);
+                php_printf("%s::%-20s\n", cls, func);
             }else {
-                php_printf("%s\n", func);
+                php_printf("%-30s\n", func);
             }
         }else {
-
+            php_printf("\n");
         }
     }
 }
 
 void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 {
+    int lineno;
+    const char *filename;
+
     ngx_http_request_t *r = ngx_php_request;
     ngx_http_php_ctx_t *ctx;
     ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
@@ -640,6 +657,12 @@ void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
         
+        lineno = zend_get_executed_lineno();
+        php_printf("%-6d", lineno);
+
+        filename = ngx_get_executed_filename();
+        php_printf("%-60s", filename);
+
         ngx_function_name(execute_data);
 
         ctx->output_type = OUTPUT_STACK;
@@ -648,5 +671,35 @@ void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
     }
 
     ori_execute_ex(execute_data TSRMLS_CC);
+}
+
+void ngx_execute_internal(zend_execute_data *execute_data, zval *return_value TSRMLS_DC)
+{
+    int lineno;
+    const char *filename;
+
+    ngx_http_request_t *r = ngx_php_request;
+    ngx_http_php_ctx_t *ctx;
+    ctx = ngx_http_get_module_ctx(r, ngx_http_php_module);
+
+    if (ctx->output_type & OUTPUT_STACK) {
+        ctx->output_type = OUTPUT_CONTENT;
+
+        //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+        
+        lineno = zend_get_executed_lineno();
+        php_printf("%-6d", lineno);
+
+        filename = ngx_get_executed_filename();
+        php_printf("%-60s", filename);
+
+        ngx_function_name(execute_data);
+
+        ctx->output_type = OUTPUT_STACK;
+
+        ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+    }
+
+    execute_internal(execute_data, return_value);
 }
 
