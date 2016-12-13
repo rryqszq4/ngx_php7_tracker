@@ -624,6 +624,7 @@ static void ngx_function_name(zend_execute_data *execute_data)
     zend_function *curr_func;
     const char * cls;
     const char * func;
+    const zend_op *opline;
 
     data = EG(current_execute_data);
 
@@ -641,6 +642,32 @@ static void ngx_function_name(zend_execute_data *execute_data)
                 php_printf("%-30s\n", func);
             }
         }else {
+            if (data->prev_execute_data) {
+                opline = data->prev_execute_data->opline;
+            }else {
+                opline = data->opline;
+            }
+
+            switch (opline->extended_value) {
+                case ZEND_EVAL:
+                    php_printf("%-30s", "eval");
+                    break;
+                case ZEND_INCLUDE:
+                    php_printf("%-30s", "include");
+                    break;
+                case ZEND_REQUIRE:
+                    php_printf("%-30s", "require");
+                    break;
+                case ZEND_INCLUDE_ONCE:
+                    php_printf("%-30s", "include_once");
+                    break;
+                case ZEND_REQUIRE_ONCE:
+                    php_printf("%-30s", "require_once");
+                    break;
+                default:
+                    php_printf("%-30s", "main");
+                    break;
+            }
             php_printf("\n");
         }
     }
