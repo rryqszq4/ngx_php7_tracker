@@ -1,13 +1,13 @@
 ngx_php7_tracker
 ================
 
-[ngx_php7_tracker](https://github.com/rryqszq4/ngx_php7_tracker) - Track php7 script language for nginx-module.   
+[ngx_php7_tracker](https://github.com/rryqszq4/ngx_php7_tracker) - Track php7 script language for nginx-module. A branch of [ngx_php7](https://github.com/rryqszq4/ngx_php7).  
 QQ group：558795330
 
 Requirement
 -----------
-- PHP 7.*.*  
-- nginx-1.6.3 
+- PHP 7.0.* ~ PHP 7.1.*  
+- nginx-1.4.7 ~ nginx-1.11.4 
 
 Installation
 ------------
