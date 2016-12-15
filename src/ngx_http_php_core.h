@@ -81,6 +81,7 @@ typedef struct ngx_http_php_ctx_t {
     ngx_int_t error;
 
     unsigned output_type;
+    ngx_uint_t stack_depth;
     
 } ngx_http_php_ctx_t;
 

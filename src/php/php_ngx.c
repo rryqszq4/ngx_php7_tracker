@@ -671,7 +671,36 @@ static void ngx_function_name(zend_execute_data *execute_data)
             
         }
 
-        php_printf("\n");
+        //php_printf("\n");
+    }
+}
+
+static void ngx_stack_print_tab(ngx_uint_t depth, int flag)
+{
+    int i;
+    for (i = 0; i <= (int)depth; i++) {
+        /*if (i == 0) {
+            if (flag == 0) {
+                php_printf("   ");
+            }else {
+                php_printf("|---");
+            }
+        }else {
+            if (flag == 0) {
+                php_printf("    ");
+            }else {
+                php_printf("|---");
+            }
+        }*/
+        if (i == (int)depth) {
+            if (flag == 0) {
+                php_printf("*   ");
+            }else {
+                php_printf("|---");
+            }
+        }else {
+            php_printf("    ");
+        }
     }
 }
 
@@ -689,15 +718,19 @@ void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
         
-        lineno = zend_get_executed_lineno();
-        php_printf("%-6d", lineno);
-
-        filename = ngx_get_executed_filename();
-        php_printf("%-60s", filename);
+        ngx_stack_print_tab(ctx->stack_depth,1);
+        //php_printf("%d", ctx->stack_depth);
 
         ngx_function_name(execute_data);
 
+        lineno = zend_get_executed_lineno();
+
+        filename = ngx_get_executed_filename();
+        php_printf("%s line %-6d", filename, lineno);
+        php_printf("\n");
+
         ctx->output_type = OUTPUT_STACK;
+        ctx->stack_depth += 1;
 
         ngx_http_set_ctx(r, ctx, ngx_http_php_module);
     }
@@ -712,10 +745,11 @@ void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
 
     if (ctx->output_type & OUTPUT_STACK) {
         ctx->output_type = OUTPUT_CONTENT;
+        ctx->stack_depth -= 1;
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
-        
-        php_printf("%f", (float)(((tv_end.tv_sec - tv_start.tv_sec) * 1000000) + (tv_end.tv_usec - tv_start.tv_usec))/1000000);
+        ngx_stack_print_tab(ctx->stack_depth,0);
+        php_printf("real time: %f sec", (float)(((tv_end.tv_sec - tv_start.tv_sec) * 1000000) + (tv_end.tv_usec - tv_start.tv_usec))/1000000);
         php_printf("\n");
 
         ctx->output_type = OUTPUT_STACK;
@@ -738,15 +772,19 @@ void ngx_execute_internal(zend_execute_data *execute_data, zval *return_value TS
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
         
-        lineno = zend_get_executed_lineno();
-        php_printf("%-6d", lineno);
-
-        filename = ngx_get_executed_filename();
-        php_printf("%-60s", filename);
+        ngx_stack_print_tab(ctx->stack_depth,1);
+        //php_printf("%d", ctx->stack_depth);
 
         ngx_function_name(execute_data);
 
+        lineno = zend_get_executed_lineno();
+
+        filename = ngx_get_executed_filename();
+        php_printf("%s line %-6d", filename, lineno);
+        php_printf("\n");
+
         ctx->output_type = OUTPUT_STACK;
+        ctx->stack_depth += 1;
 
         ngx_http_set_ctx(r, ctx, ngx_http_php_module);
     }
@@ -761,12 +799,13 @@ void ngx_execute_internal(zend_execute_data *execute_data, zval *return_value TS
 
     if (ctx->output_type & OUTPUT_STACK) {
         ctx->output_type = OUTPUT_CONTENT;
+        ctx->stack_depth -= 1;
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
-        
-        php_printf("%f", (float)(((tv_end.tv_sec - tv_start.tv_sec) * 1000000) + (tv_end.tv_usec - tv_start.tv_usec))/1000000);
-
+        ngx_stack_print_tab(ctx->stack_depth,0);
+        php_printf("real time: %f sec", (float)(((tv_end.tv_sec - tv_start.tv_sec) * 1000000) + (tv_end.tv_usec - tv_start.tv_usec))/1000000);
         php_printf("\n");
+        
         ctx->output_type = OUTPUT_STACK;
 
         ngx_http_set_ctx(r, ctx, ngx_http_php_module);
