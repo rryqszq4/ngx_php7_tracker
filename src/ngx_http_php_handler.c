@@ -606,6 +606,7 @@ ngx_http_php_stack_inline_handler(ngx_http_request_t *r)
 
     ctx->output_type = OUTPUT_STACK;
     ctx->stack_depth = 0;
+    ctx->stack_logo = 0;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);

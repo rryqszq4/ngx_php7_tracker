@@ -763,6 +763,14 @@ void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
     if (ctx->output_type & OUTPUT_STACK) {
         ctx->output_type = OUTPUT_CONTENT;
 
+        if (!ctx->stack_logo) {
+php_printf("    ____                __      \n");
+php_printf("   / __/_.._ ___  ___  / /__    \n");
+php_printf("  _\\ \\/_  __/ _ `/ _ `/  '_/    \n");
+php_printf(" /___/ /__/ \\_,\\/\\___/_/\\_\\     /ngx_php7_tracker\n");
+php_printf("                               /version: %s\n\n", NGX_HTTP_PHP_MODULE_VERSION);
+            ctx->stack_logo = 1;
+        }
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
         
         ngx_stack_print_tab(ctx->stack_depth,1);
@@ -817,6 +825,14 @@ void ngx_execute_internal(zend_execute_data *execute_data, zval *return_value TS
     if (ctx->output_type & OUTPUT_STACK) {
         ctx->output_type = OUTPUT_CONTENT;
 
+        if (!ctx->stack_logo) {
+php_printf("    ____                __      \n");
+php_printf("   / __/_.._ ___  ___  / /__    \n");
+php_printf("  _\\ \\/_  __/ _ `/ _ `/  '_/    \n");
+php_printf(" /___/ /__/ \\_,\\/\\___/_/\\_\\     /ngx_php7_tracker\n");
+php_printf("                               /version: %s\n\n", NGX_HTTP_PHP_MODULE_VERSION);
+            ctx->stack_logo = 1;
+        }
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
         
         ngx_stack_print_tab(ctx->stack_depth,1);
