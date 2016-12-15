@@ -637,9 +637,9 @@ static void ngx_function_name(zend_execute_data *execute_data)
                     (ngx_get_called_scope(data) ?
                             ngx_get_called_scope(data)->name->val : NULL);
             if (cls) {
-                php_printf("%s::%-20s\n", cls, func);
+                php_printf("%s::%-20s", cls, func);
             }else {
-                php_printf("%-30s\n", func);
+                php_printf("%-30s", func);
             }
         }else {
             if (data->prev_execute_data) {
@@ -668,8 +668,10 @@ static void ngx_function_name(zend_execute_data *execute_data)
                     php_printf("%-30s", "main");
                     break;
             }
-            php_printf("\n");
+            
         }
+
+        php_printf("\n");
     }
 }
 
@@ -700,7 +702,26 @@ void ngx_execute_ex(zend_execute_data *execute_data TSRMLS_DC)
         ngx_http_set_ctx(r, ctx, ngx_http_php_module);
     }
 
+    struct timeval tv_start;
+    struct timeval tv_end;
+    gettimeofday(&tv_start, 0);
+
     ori_execute_ex(execute_data TSRMLS_CC);
+
+    gettimeofday(&tv_end, 0);
+
+    if (ctx->output_type & OUTPUT_STACK) {
+        ctx->output_type = OUTPUT_CONTENT;
+
+        //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+        
+        php_printf("%f", (float)(((tv_end.tv_sec - tv_start.tv_sec) * 1000000) + (tv_end.tv_usec - tv_start.tv_usec))/1000000);
+        php_printf("\n");
+
+        ctx->output_type = OUTPUT_STACK;
+
+        ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+    }
 }
 
 void ngx_execute_internal(zend_execute_data *execute_data, zval *return_value TSRMLS_DC)
@@ -730,6 +751,26 @@ void ngx_execute_internal(zend_execute_data *execute_data, zval *return_value TS
         ngx_http_set_ctx(r, ctx, ngx_http_php_module);
     }
 
+    struct timeval tv_start;
+    struct timeval tv_end;
+    gettimeofday(&tv_start, 0);
+
     execute_internal(execute_data, return_value);
+
+    gettimeofday(&tv_end, 0);
+
+    if (ctx->output_type & OUTPUT_STACK) {
+        ctx->output_type = OUTPUT_CONTENT;
+
+        //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+        
+        php_printf("%f", (float)(((tv_end.tv_sec - tv_start.tv_sec) * 1000000) + (tv_end.tv_usec - tv_start.tv_usec))/1000000);
+
+        php_printf("\n");
+        ctx->output_type = OUTPUT_STACK;
+
+        ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+        
+    }
 }
 
