@@ -405,12 +405,17 @@ zend_op_array* ngx_compile_file(zend_file_handle* file_handle, int type TSRMLS_D
         ctx->output_type = OUTPUT_CONTENT;
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+
+        if (!ctx->opcode_logo) {
 php_printf("    ___                   __    \n");
 php_printf("  /`__ \\___  ___  ___  __/ /__  \n");
 php_printf(" / /_/ / _ \\/ _ `/ _ \\/ _ / __\\ \n");
 php_printf(" \\___./ .__/\\___.\\___/\\___\\__..   /ngx_php7_tracker\n"); 
 php_printf("     /_/                         /version: %s\n", NGX_HTTP_PHP_MODULE_VERSION);
 php_printf("\n/* ~: IS_TMP_VAR, $: IS_VAR, !: IS_CV */\n\n");
+            ctx->opcode_logo = 1;
+        }
+
         ngx_track_op_array(op_array TSRMLS_CC);
 
         zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);
@@ -443,12 +448,17 @@ zend_op_array *ngx_compile_string(zval *source_string, char *filename TSRMLS_DC)
         ctx->output_type = OUTPUT_CONTENT;
 
         //ngx_http_set_ctx(r, ctx, ngx_http_php_module);
+
+        if (!ctx->opcode_logo) {
 php_printf("    ___                   __    \n");
 php_printf("  /`__ \\___  ___  ___  __/ /__  \n");
 php_printf(" / /_/ / _ \\/ _ `/ _ \\/ _ / __\\ \n");
 php_printf(" \\___./ .__/\\___.\\___/\\___\\__..   /ngx_php7_tracker\n"); 
 php_printf("     /_/                         /version: %s\n", NGX_HTTP_PHP_MODULE_VERSION);
 php_printf("\n/* ~: IS_TMP_VAR, $: IS_VAR, !: IS_CV */\n\n");
+            ctx->opcode_logo = 1;
+        }
+
         ngx_track_op_array(op_array TSRMLS_CC);
 
         zend_hash_apply_with_arguments(CG(function_table) TSRMLS_CC, (apply_func_args_t) ngx_track_fe_wrapper, 0);

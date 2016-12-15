@@ -497,6 +497,7 @@ ngx_http_php_opcode_inline_handler(ngx_http_request_t *r)
     }
 
     ctx->output_type = OUTPUT_OPCODE;
+    ctx->opcode_logo = 0;
 
     ctx->request_body_more = 1;
     ngx_http_set_ctx(r, ctx, ngx_http_php_module);
