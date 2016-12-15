@@ -440,6 +440,9 @@ ngx_http_php_init_worker(ngx_cycle_t *cycle)
     //old_zend_error_cb = zend_error_cb;
     //zend_error_cb = ngx_php_error_cb;
 
+    ori_compile_file = zend_compile_file;
+    zend_compile_file = ngx_compile_file;
+
     ori_compile_string = zend_compile_string;
     zend_compile_string = ngx_compile_string;
 
