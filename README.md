@@ -11,7 +11,7 @@ Requirement
 
 Installation
 ------------
-1. build php7
+**1. build php7**
 ```sh
 $ wget http://php.net/distributions/php-7.0.14.tar.gz
 $ tar xf php-7.0.14.tar.gz
@@ -23,7 +23,7 @@ $ ./configure --prefix=/path/to/php \
 $ make && make install
 ```
 
-2. build ngx_php7_tracker
+**2. build ngx_php7_tracker**
 ```sh
 $ git clone https://github.com/rryqszq4/ngx_php7_tracker.git
 
